@@ -12,6 +12,12 @@
 #include <stdio.h>
 #include <SDL2/SDL.h>
 
+struct Vector2
+{
+    float x;
+    float y;
+};
+
 class Game
 {
 public:
@@ -27,12 +33,24 @@ private:
     void ProcessInput();
     void UpdateGame();
     void GenerateOutput();
+    
     // Window created by SDL
     SDL_Window* mWindow;
     // Game should continue to run
     bool mIsRunning;
+    // Number of ticks since start of game
+    Uint32 mTicksCount;
+    
     // Game renerer
     SDL_Renderer* mRenderer;
+    // Position of paddle
+    Vector2 mPaddlePos;
+    // Direction paddle should travel on next frame render
+    int mPaddleDir;
+    // Position of ball
+    Vector2 mBallPos;
+    // Velocity of the ball
+    Vector2 mBallVel;
 };
 
 #endif /* Game_hpp */
