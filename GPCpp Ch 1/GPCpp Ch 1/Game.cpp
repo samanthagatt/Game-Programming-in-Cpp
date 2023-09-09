@@ -7,17 +7,50 @@
 //
 
 #include "Game.hpp"
+#include <iostream>
+using namespace std;
 
 const int windowWidth = 1024;
 const int windowHeight = 768;
 const int thickness = 15;
 const float paddleH = 100.0f;
 
+int randomInRange(int min, int max)
+{
+    return (rand() % (max - min + 1)) + min;
+}
+float randomXForBall()
+{
+    return randomInRange(windowWidth/3, windowWidth-thickness);
+}
+float randomYForBall()
+{
+    return randomInRange(thickness, windowHeight-thickness);
+}
+
 Game::Game()
 :mWindow(nullptr)
 ,mIsRunning(true)
 {
     
+}
+
+void Game::positionBallRandomly()
+{
+    mBallPos.x = randomXForBall();
+    mBallPos.y = randomYForBall();
+}
+
+void Game::setRandomBallDirection()
+{
+    if (randomInRange(0, 1) == 1)
+    {
+        mBallVel.x *= -1.0f;
+    }
+    if (randomInRange(0, 1) == 1)
+    {
+        mBallVel.y *= -1.0f;
+    }
 }
 
 bool Game::Initialize()
@@ -57,11 +90,11 @@ bool Game::Initialize()
     }
     mPaddlePos.x = 10.0f;
     mPaddlePos.y = 768.0f/2.0f;
-    mBallPos.x = 1024.0f/2.0f;
-    mBallPos.y = 768.0f/2.0f;
+    positionBallRandomly();
     mPaddleDir = 0;
     mBallVel.x = -200.0f;
     mBallVel.y = 235.0f;
+    setRandomBallDirection();
     return true;
 }
 
@@ -139,9 +172,11 @@ void Game::movePaddle(float deltaTime)
 void Game::moveBall(float deltaTime) {
     mBallPos.x += mBallVel.x * deltaTime;
     mBallPos.y += mBallVel.y * deltaTime;
-    bool didCollideWithTop = mBallPos.y <= static_cast<float>(thickness) && mBallVel.y < 0.0f;
-    bool didCollideWithBottom = mBallPos.y >= static_cast<float>(windowHeight - thickness - thickness/2) && mBallVel.y > 0.0f;
+    // Collision detection
     // If the ball collides with the top wall while it's traveling up
+    bool didCollideWithTop = mBallPos.y <= static_cast<float>(thickness) && mBallVel.y < 0.0f;
+    // If the ball collides with the bottom wall while it's traveling down
+    bool didCollideWithBottom = mBallPos.y >= static_cast<float>(windowHeight - thickness - thickness/2) && mBallVel.y > 0.0f;
     if (didCollideWithTop || didCollideWithBottom)
     {
         // Bounce off 90 degrees
@@ -158,6 +193,12 @@ void Game::moveBall(float deltaTime) {
     if (didCollideWithPaddleY && didCollideWithPaddleX && ballIsTravelingToPaddle)
     {
         mBallVel.x *= -1;
+    }
+    // Reset if player lost
+    if (mBallPos.x < -400)
+    {
+        positionBallRandomly();
+        setRandomBallDirection();
     }
 }
 

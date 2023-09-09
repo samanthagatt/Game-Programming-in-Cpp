@@ -77,8 +77,8 @@
 			isa = PBXGroup;
 			children = (
 				D64E12312AA81809009B4CA9 /* main.cpp */,
-				D64E12282AA81306009B4CA9 /* Game.cpp */,
 				D64E12272AA81306009B4CA9 /* Game.hpp */,
+				D64E12282AA81306009B4CA9 /* Game.cpp */,
 			);
 			path = "GPCpp Ch 1";
 			sourceTree = "<group>";

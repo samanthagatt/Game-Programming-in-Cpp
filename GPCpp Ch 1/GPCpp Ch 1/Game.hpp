@@ -36,6 +36,8 @@ private:
     
     // Helper functions
     void shutdownIfNeeded(const Uint8*);
+    void positionBallRandomly();
+    void setRandomBallDirection();
     void movePaddle(float);
     void moveBall(float);
     void drawWalls();
