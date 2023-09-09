@@ -82,7 +82,7 @@ void Game::RunLoop()
     }
 }
 
-void Game::ProcessInput()
+void Game::shutdownIfNeeded(const Uint8* keyState)
 {
     SDL_Event event;
     while (SDL_PollEvent(&event))
@@ -94,11 +94,17 @@ void Game::ProcessInput()
                 break;
         }
     }
-    const Uint8* keyState = SDL_GetKeyboardState(NULL);
     if (keyState[SDL_SCANCODE_ESCAPE])
     {
         mIsRunning = false;
     }
+}
+
+void Game::ProcessInput()
+{
+    const Uint8* keyState = SDL_GetKeyboardState(NULL);
+    shutdownIfNeeded(keyState);
+    
     if (keyState[SDL_SCANCODE_W])
     {
         mPaddleDir -= 1;
@@ -106,6 +112,52 @@ void Game::ProcessInput()
     if (keyState[SDL_SCANCODE_S])
     {
         mPaddleDir += 1;
+    }
+}
+
+void Game::movePaddle(float deltaTime)
+{
+    if (mPaddleDir != 0)
+    {
+        // Move paddle 300 pixels per second based on user input
+        mPaddlePos.y += mPaddleDir * 300.0f * deltaTime;
+        mPaddleDir = 0;
+        // Don't let paddle move out of bounds
+        float minPaddleY = paddleH/2.0f + static_cast<float>(thickness);
+        float maxPaddleY = static_cast<float>(windowHeight - thickness) - paddleH/2.0f;
+        if (mPaddlePos.y < minPaddleY)
+        {
+            mPaddlePos.y = minPaddleY;
+        }
+        else if (mPaddlePos.y > maxPaddleY)
+        {
+            mPaddlePos.y = maxPaddleY;
+        }
+    }
+}
+
+void Game::moveBall(float deltaTime) {
+    mBallPos.x += mBallVel.x * deltaTime;
+    mBallPos.y += mBallVel.y * deltaTime;
+    bool didCollideWithTop = mBallPos.y <= static_cast<float>(thickness) && mBallVel.y < 0.0f;
+    bool didCollideWithBottom = mBallPos.y >= static_cast<float>(windowHeight - thickness - thickness/2) && mBallVel.y > 0.0f;
+    // If the ball collides with the top wall while it's traveling up
+    if (didCollideWithTop || didCollideWithBottom)
+    {
+        // Bounce off 90 degrees
+        mBallVel.y *= -1;
+    }
+    bool didCollideWithRight = mBallPos.x >= static_cast<float>(windowWidth - thickness - thickness/2) && mBallVel.x > 0.0f;
+    if (didCollideWithRight)
+    {
+        mBallVel.x *= -1;
+    }
+    bool didCollideWithPaddleY = fabs(mPaddlePos.y - mBallPos.y) <= paddleH/2.0f;
+    bool didCollideWithPaddleX = mBallPos.x <= mPaddlePos.x + thickness/2 && mBallPos.x >= mPaddlePos.x - thickness/2;
+    bool ballIsTravelingToPaddle = mBallVel.x < 0.0f;
+    if (didCollideWithPaddleY && didCollideWithPaddleX && ballIsTravelingToPaddle)
+    {
+        mBallVel.x *= -1;
     }
 }
 
@@ -125,56 +177,12 @@ void Game::UpdateGame()
     {
         deltaTime = 0.05f;
     }
-    if (mPaddleDir != 0)
-    {
-        // Move paddle 300 pixels per second based on user input
-        mPaddlePos.y += mPaddleDir * 300.0f * deltaTime;
-        mPaddleDir = 0;
-        float minPaddleY = paddleH/2.0f + static_cast<float>(thickness);
-        float maxPaddleY = static_cast<float>(windowHeight - thickness) - paddleH/2.0f;
-        if (mPaddlePos.y < minPaddleY)
-        {
-            mPaddlePos.y = minPaddleY;
-        }
-        else if (mPaddlePos.y > maxPaddleY)
-        {
-            mPaddlePos.y = maxPaddleY;
-        }
-    }
-    mBallPos.x += mBallVel.x * deltaTime;
-    mBallPos.y += mBallVel.y * deltaTime;
-    
-    bool didCollideWithTop = mBallPos.y <= static_cast<float>(thickness) && mBallVel.y < 0.0f;
-    bool didCollideWithBottom = mBallPos.y >= static_cast<float>(windowHeight - thickness - thickness/2) && mBallVel.y > 0.0f;
-    // If the ball collides with the top wall while it's traveling up
-    if (didCollideWithTop || didCollideWithBottom)
-    {
-        // Bounce off 90 degrees
-        mBallVel.y *= -1;
-    }
-    bool didCollideWithRight = mBallPos.x >= static_cast<float>(windowWidth - thickness - thickness/2) && mBallVel.x > 0.0f;
-    if (didCollideWithRight)
-    {
-        mBallVel.x *= -1;
-    }
-    
-    bool yInRange = fabs(mPaddlePos.y - mBallPos.y) <= paddleH/2.0f;
-    bool xInRange = mBallPos.x <= mPaddlePos.x + thickness/2 && mBallPos.x >= mPaddlePos.x - thickness/2;
-    bool ballIsTravelingToPaddle = mBallVel.x < 0.0f;
-    if (yInRange && xInRange && ballIsTravelingToPaddle)
-    {
-        mBallVel.x *= -1;
-    }
-    
+    movePaddle(deltaTime);
+    moveBall(deltaTime);
 }
 
-void Game::GenerateOutput()
+void Game::drawWalls()
 {
-    // Sets the color to be rendered (on the back buffer)
-    SDL_SetRenderDrawColor(mRenderer, 0, 0, 255, 255);
-    // Fills the back buffer with the set color
-    SDL_RenderClear(mRenderer);
-    // Draw the game scene
     SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255);
     SDL_Rect wall{
         0,
@@ -190,6 +198,10 @@ void Game::GenerateOutput()
     wall.w = thickness;
     wall.h = windowHeight;
     SDL_RenderFillRect(mRenderer, &wall);
+}
+
+void Game::drawBall()
+{
     SDL_Rect ball{
         static_cast<int>(mBallPos.x - thickness / 2),
         static_cast<int>(mBallPos.y - thickness / 2),
@@ -197,6 +209,10 @@ void Game::GenerateOutput()
         thickness
     };
     SDL_RenderFillRect(mRenderer, &ball);
+}
+
+void Game::drawPaddle()
+{
     SDL_Rect paddle{
         static_cast<int>(mPaddlePos.x - thickness/2),
         static_cast<int>(mPaddlePos.y - paddleH/2),
@@ -204,6 +220,18 @@ void Game::GenerateOutput()
         static_cast<int>(paddleH)
     };
     SDL_RenderFillRect(mRenderer, &paddle);
+}
+
+void Game::GenerateOutput()
+{
+    // Sets the color to be rendered (on the back buffer)
+    SDL_SetRenderDrawColor(mRenderer, 0, 0, 255, 255);
+    // Fills the back buffer with the set color
+    SDL_RenderClear(mRenderer);
+    // Draw the game scene (on the back buffer)
+    drawWalls();
+    drawBall();
+    drawPaddle();
     // Swaps back buffer so it's now visible
     SDL_RenderPresent(mRenderer);
 }

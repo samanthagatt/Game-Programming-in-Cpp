@@ -29,10 +29,18 @@ public:
     // Shutdown the game
     void Shutdown();
 private:
-    // Helper functions for the game loop
+    // Game loop functions
     void ProcessInput();
     void UpdateGame();
     void GenerateOutput();
+    
+    // Helper functions
+    void shutdownIfNeeded(const Uint8*);
+    void movePaddle(float);
+    void moveBall(float);
+    void drawWalls();
+    void drawBall();
+    void drawPaddle();
     
     // Window created by SDL
     SDL_Window* mWindow;
@@ -41,15 +49,15 @@ private:
     // Number of ticks since start of game
     Uint32 mTicksCount;
     
-    // Game renerer
+    /// Game renderer
     SDL_Renderer* mRenderer;
-    // Position of paddle
+    /// Position of paddle
     Vector2 mPaddlePos;
-    // Direction paddle should travel on next frame render
+    /// Direction paddle should travel on next frame render
     int mPaddleDir;
-    // Position of ball
+    /// Position of ball
     Vector2 mBallPos;
-    // Velocity of the ball
+    /// Velocity of the ball
     Vector2 mBallVel;
 };
 
