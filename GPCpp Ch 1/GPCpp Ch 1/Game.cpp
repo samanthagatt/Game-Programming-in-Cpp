@@ -88,11 +88,14 @@ bool Game::Initialize()
         SDL_Log("Failed to create renderer: %s", SDL_GetError());
         return false;
     }
-    mPaddlePos.x = 10.0f;
-    mPaddlePos.y = 768.0f/2.0f;
+    mPaddle1.pos.x = 10.0f;
+    mPaddle1.pos.y = 768.0f/2.0f;
+    mPaddle1.dir = 0;
+    mPaddle2.pos.x = 10.0f;
+    mPaddle2.pos.y = 768.0f/2.0f;
+    mPaddle2.dir = 0;
     positionBallRandomly();
-    mPaddleDir = 0;
-    mBallVel.x = -200.0f;
+    mBallVel.x = 200.0f;
     mBallVel.y = 235.0f;
     setRandomBallDirection();
     return true;
@@ -140,32 +143,50 @@ void Game::ProcessInput()
     
     if (keyState[SDL_SCANCODE_W])
     {
-        mPaddleDir -= 1;
+        mPaddle1.dir -= 1;
     }
     if (keyState[SDL_SCANCODE_S])
     {
-        mPaddleDir += 1;
+        mPaddle1.dir += 1;
+    }
+    if (keyState[SDL_SCANCODE_UP])
+    {
+        mPaddle2.dir -= 1;
+    }
+    if (keyState[SDL_SCANCODE_DOWN])
+    {
+        mPaddle2.dir += 1;
     }
 }
 
-void Game::movePaddle(float deltaTime)
+void Game::movePaddle(Paddle paddle, float deltaTime)
 {
-    if (mPaddleDir != 0)
+    if (paddle.dir != 0)
     {
         // Move paddle 300 pixels per second based on user input
-        mPaddlePos.y += mPaddleDir * 300.0f * deltaTime;
-        mPaddleDir = 0;
+        paddle.pos.y += paddle.dir * 300.0f * deltaTime;
+        paddle.dir = 0;
         // Don't let paddle move out of bounds
         float minPaddleY = paddleH/2.0f + static_cast<float>(thickness);
         float maxPaddleY = static_cast<float>(windowHeight - thickness) - paddleH/2.0f;
-        if (mPaddlePos.y < minPaddleY)
+        if (paddle.pos.y < minPaddleY)
         {
-            mPaddlePos.y = minPaddleY;
+            paddle.pos.y = minPaddleY;
         }
-        else if (mPaddlePos.y > maxPaddleY)
+        else if (paddle.pos.y > maxPaddleY)
         {
-            mPaddlePos.y = maxPaddleY;
+            paddle.pos.y = maxPaddleY;
         }
+    }
+}
+
+void Game::paddleCollisionDetection(Paddle paddle, bool ballIsApproaching)
+{
+    bool didCollideWithPaddleY = fabs(paddle.pos.y - mBallPos.y) <= paddleH/2.0f;
+    bool didCollideWithPaddleX = mBallPos.x <= paddle.pos.x + thickness/2 && mBallPos.x >= paddle.pos.x - thickness/2;
+    if (didCollideWithPaddleY && didCollideWithPaddleX && ballIsApproaching)
+    {
+        mBallVel.x *= -1;
     }
 }
 
@@ -187,13 +208,8 @@ void Game::moveBall(float deltaTime) {
     {
         mBallVel.x *= -1;
     }
-    bool didCollideWithPaddleY = fabs(mPaddlePos.y - mBallPos.y) <= paddleH/2.0f;
-    bool didCollideWithPaddleX = mBallPos.x <= mPaddlePos.x + thickness/2 && mBallPos.x >= mPaddlePos.x - thickness/2;
-    bool ballIsTravelingToPaddle = mBallVel.x < 0.0f;
-    if (didCollideWithPaddleY && didCollideWithPaddleX && ballIsTravelingToPaddle)
-    {
-        mBallVel.x *= -1;
-    }
+    paddleCollisionDetection(mPaddle1, mBallVel.x < 0.0f);
+    paddleCollisionDetection(mPaddle2, mBallVel.x > 0.0f);
     // Reset if player lost
     if (mBallPos.x < -400)
     {
@@ -218,7 +234,8 @@ void Game::UpdateGame()
     {
         deltaTime = 0.05f;
     }
-    movePaddle(deltaTime);
+    movePaddle(mPaddle1, deltaTime);
+    movePaddle(mPaddle2, deltaTime);
     moveBall(deltaTime);
 }
 
@@ -252,15 +269,15 @@ void Game::drawBall()
     SDL_RenderFillRect(mRenderer, &ball);
 }
 
-void Game::drawPaddle()
+void Game::drawPaddle(Paddle paddle)
 {
-    SDL_Rect paddle{
-        static_cast<int>(mPaddlePos.x - thickness/2),
-        static_cast<int>(mPaddlePos.y - paddleH/2),
+    SDL_Rect paddleRect{
+        static_cast<int>(paddle.pos.x - thickness/2),
+        static_cast<int>(paddle.pos.y - paddleH/2),
         thickness,
         static_cast<int>(paddleH)
     };
-    SDL_RenderFillRect(mRenderer, &paddle);
+    SDL_RenderFillRect(mRenderer, &paddleRect);
 }
 
 void Game::GenerateOutput()
@@ -272,7 +289,8 @@ void Game::GenerateOutput()
     // Draw the game scene (on the back buffer)
     drawWalls();
     drawBall();
-    drawPaddle();
+    drawPaddle(mPaddle1);
+    drawPaddle(mPaddle2);
     // Swaps back buffer so it's now visible
     SDL_RenderPresent(mRenderer);
 }

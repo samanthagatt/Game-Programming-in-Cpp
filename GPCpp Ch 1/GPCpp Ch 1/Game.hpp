@@ -18,6 +18,14 @@ struct Vector2
     float y;
 };
 
+struct Paddle
+{
+    /// Position of paddle
+    Vector2 pos;
+    /// Direction paddle should travel on next frame render
+    int dir;
+};
+
 class Game
 {
 public:
@@ -38,26 +46,23 @@ private:
     void shutdownIfNeeded(const Uint8*);
     void positionBallRandomly();
     void setRandomBallDirection();
-    void movePaddle(float);
+    void movePaddle(Paddle, float);
+    void paddleCollisionDetection(Paddle, bool);
     void moveBall(float);
     void drawWalls();
     void drawBall();
-    void drawPaddle();
+    void drawPaddle(Paddle);
     
-    // Window created by SDL
+    /// Window created by SDL
     SDL_Window* mWindow;
-    // Game should continue to run
+    /// Game should continue to run
     bool mIsRunning;
-    // Number of ticks since start of game
+    /// Number of ticks since start of game
     Uint32 mTicksCount;
-    
     /// Game renderer
     SDL_Renderer* mRenderer;
-    /// Position of paddle
-    Vector2 mPaddlePos;
-    /// Direction paddle should travel on next frame render
-    int mPaddleDir;
-    /// Position of ball
+    Paddle mPaddle1;
+    Paddle mPaddle2;
     Vector2 mBallPos;
     /// Velocity of the ball
     Vector2 mBallVel;
