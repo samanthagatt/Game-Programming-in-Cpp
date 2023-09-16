@@ -16,12 +16,59 @@ Game::Game()
 
 bool Game::Initialize()
 {
+    if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO) != 0)
+    {
+        SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
+        return false;
+    }
+    
+    mWindow = SDL_CreateWindow("Game Programming in C++ (Chapter 2)", 100, 100, 1024, 768, 0);
+    if (!mWindow)
+    {
+        SDL_Log("Failed to create window: %s", SDL_GetError());
+        return false;
+    }
+    
+    mRenderer = SDL_CreateRenderer(mWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    if (!mRenderer)
+    {
+        SDL_Log("Failed to create renderer: %s", SDL_GetError());
+        return false;
+    }
+
+    mTicksCount = SDL_GetTicks();
+    
     return true;
+}
+
+void Game::RunLoop()
+{
+    while (mIsRunning)
+    {
+        ProcessInput();
+        UpdateGame();
+        GenerateOutput();
+    }
 }
 
 void Game::ProcessInput()
 {
+    SDL_Event event;
+    while (SDL_PollEvent(&event))
+    {
+        switch (event.type)
+        {
+            case SDL_QUIT:
+                mIsRunning = false;
+                break;
+        }
+    }
     
+    const Uint8* state = SDL_GetKeyboardState(NULL);
+    if (state[SDL_SCANCODE_ESCAPE])
+    {
+        mIsRunning = false;
+    }
 }
 
 void Game::UpdateGame()
@@ -44,6 +91,7 @@ void Game::UpdateGame()
     }
     mUpdatingActors = false;
     
+    // Skips updating them this run loop (since it's their first?)
     for (Actor* actor : mPendingActors)
     {
         mActors.emplace_back(actor);
@@ -51,6 +99,7 @@ void Game::UpdateGame()
     mPendingActors.clear();
     
     // Temp vector for dead actors (to be deleted next)
+    // Even checks if the previously pending actors are dead
     vector<Actor*> deadActors;
     for (auto actor : mActors)
     {
@@ -60,6 +109,7 @@ void Game::UpdateGame()
         }
     }
     // Delete all dead actors
+    // Can do a normal for loop because mActors will be modified on ~Actor (not deadActors)
     for (auto actor : deadActors)
     {
         // Removes it from mActors too since we have the custom ~Actor
@@ -69,14 +119,9 @@ void Game::UpdateGame()
 
 void Game::GenerateOutput()
 {
-    
-}
-
-void Game::RunLoop()
-{
-    ProcessInput();
-    UpdateGame();
-    GenerateOutput();
+    SDL_SetRenderDrawColor(mRenderer, 0, 0, 0, 255); // defines color
+    SDL_RenderClear(mRenderer); // fills back buffer with defined color
+    SDL_RenderPresent(mRenderer); // swaps buffers
 }
 
 void Game::AddActor(Actor* actor)
@@ -91,7 +136,7 @@ void Game::AddActor(Actor* actor)
     }
 }
 
-void removeActor(vector<Actor*>& actors, Actor *actor)
+void removeActor(vector<Actor*>& actors, Actor* actor)
 {
     auto iter = std::find(actors.begin(), actors.end(), actor);
     if (iter != actors.end()) {
@@ -102,7 +147,7 @@ void removeActor(vector<Actor*>& actors, Actor *actor)
     }
 }
 
-void Game::RemoveActor(Actor *actor)
+void Game::RemoveActor(Actor* actor)
 {
     removeActor(mPendingActors, actor);
     removeActor(mActors, actor);

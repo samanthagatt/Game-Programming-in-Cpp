@@ -30,6 +30,8 @@ private:
     void UpdateGame();
     void GenerateOutput();
     
+    SDL_Window* mWindow;
+    SDL_Renderer* mRenderer;
     bool mIsRunning;
     Uint32 mTicksCount;
     bool mUpdatingActors;

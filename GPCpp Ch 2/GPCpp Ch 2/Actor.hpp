@@ -43,9 +43,11 @@ public:
         EDead
     };
     
+    // Init/Deinit
     Actor(Game* game);
     virtual ~Actor();
     
+    // Main functions
     // Called from Game
     void Update(float deltaTime); // no overriding
     void UpdateComponents(float deltaTime); // no overriding
@@ -53,7 +55,17 @@ public:
     virtual void UpdateActor(float deltaTime); // to be overriden
     void AddComponent(Component* component);
     void RemoveComponent(Component* component);
-    State GetState();
+    
+    // Getters/setters
+    const Vector2& GetPosition() const { return mPosition; }
+    void SetPosition(const Vector2& pos) { mPosition = pos; }
+    float GetScale() const { return mScale; }
+    void SetScale(float scale) { mScale = scale; }
+    float GetRotation() const { return mRotation; }
+    void SetRotation(float rotation) { mRotation = rotation; }
+
+    State GetState() const { return mState; }
+    void SetState(State state) { mState = state; }
 private:
     State mState;
     /// Center of actor
