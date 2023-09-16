@@ -13,10 +13,24 @@
 #include <vector>
 using std::vector;
 
+// standard forward declaration
+class Game;
+class Component;
+
 struct Vector2
 {
     float x;
     float y;
+    
+    Vector2()
+        :x(0.0f)
+        ,y(0.0f)
+    { }
+    
+    explicit Vector2(float inX, float inY)
+        :x(inX)
+        ,y(inY)
+    { }
 };
 
 class Actor
@@ -29,24 +43,25 @@ public:
         EDead
     };
     
-    Actor(class Game* game);
+    Actor(Game* game);
     virtual ~Actor();
     
     // Called from Game
     void Update(float deltaTime); // no overriding
     void UpdateComponents(float deltaTime); // no overriding
+    // Actor-specific
     virtual void UpdateActor(float deltaTime); // to be overriden
-    void AddComponent(class Component* component);
-    void RemoveComponent(class Component* component);
-    
+    void AddComponent(Component* component);
+    void RemoveComponent(Component* component);
+    State GetState();
 private:
     State mState;
     /// Center of actor
     Vector2 mPosition;
     float mScale;
     float mRotation;
-    vector<class Component*> mComponents;
-    class Game* game;
+    vector<Component*> mComponents;
+    Game* mGame;
 };
 
 #endif /* Actor_hpp */

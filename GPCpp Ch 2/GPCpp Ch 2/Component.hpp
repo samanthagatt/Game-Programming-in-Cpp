@@ -19,6 +19,7 @@ public:
     virtual void Update(float deltaTime);
     int GetUpdateOrder() const { return mUpdateOrder; }
 private:
+    // inline forward declaration
     class Actor* mOwner;
     // Lower the update order, the earlier the component is updated
     int mUpdateOrder;

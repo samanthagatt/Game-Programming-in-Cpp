@@ -12,6 +12,7 @@
 		D67052B42AAD62FA00123C97 /* SDL2.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D67052B22AAD62FA00123C97 /* SDL2.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D67052B82AAD633C00123C97 /* Actor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D67052B62AAD633C00123C97 /* Actor.cpp */; };
 		D67052BB2AAD65C400123C97 /* Component.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D67052B92AAD65C400123C97 /* Component.cpp */; };
+		D67052BE2AAD6CEE00123C97 /* Game.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D67052BC2AAD6CEE00123C97 /* Game.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -45,6 +46,8 @@
 		D67052B72AAD633C00123C97 /* Actor.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Actor.hpp; sourceTree = "<group>"; };
 		D67052B92AAD65C400123C97 /* Component.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Component.cpp; sourceTree = "<group>"; };
 		D67052BA2AAD65C400123C97 /* Component.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Component.hpp; sourceTree = "<group>"; };
+		D67052BC2AAD6CEE00123C97 /* Game.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Game.cpp; sourceTree = "<group>"; };
+		D67052BD2AAD6CEE00123C97 /* Game.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Game.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -84,6 +87,8 @@
 				D67052B72AAD633C00123C97 /* Actor.hpp */,
 				D67052B92AAD65C400123C97 /* Component.cpp */,
 				D67052BA2AAD65C400123C97 /* Component.hpp */,
+				D67052BC2AAD6CEE00123C97 /* Game.cpp */,
+				D67052BD2AAD6CEE00123C97 /* Game.hpp */,
 			);
 			path = "GPCpp Ch 2";
 			sourceTree = "<group>";
@@ -157,6 +162,7 @@
 				D67052AB2AAD62EA00123C97 /* main.cpp in Sources */,
 				D67052BB2AAD65C400123C97 /* Component.cpp in Sources */,
 				D67052B82AAD633C00123C97 /* Actor.cpp in Sources */,
+				D67052BE2AAD6CEE00123C97 /* Game.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
